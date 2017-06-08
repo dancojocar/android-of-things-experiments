@@ -12,11 +12,17 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private var buttonGpio: Gpio? = null
+    private var ledGpio: Gpio? = null
 
     // Step 4. Register an event callback.
     private val callback = object : GpioCallback() {
         override fun onGpioEdge(gpio: Gpio?): Boolean {
             Log.i(TAG, "GPIO changed, button pressed")
+
+            ledGpio?.apply {
+                value = !value
+            }
+
             // Step 5. Return true to keep callback active.
             return true
         }
@@ -39,6 +45,11 @@ class MainActivity : AppCompatActivity() {
                 // Step 4. Register an event callback.
                 registerGpioCallback(callback)
             }
+
+            // Step 1. Create GPIO connection.
+            ledGpio = service.openGpio(LED_PIN_NAME)
+            // Step 2. Configure as an output.
+            ledGpio?.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
         } catch (e: IOException) {
             Log.e(TAG, "Error on PeripheralIO API", e)
         }
@@ -56,10 +67,17 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "Error on PeripheralIO API", e)
             }
         }
+        // Step 5. Close the resource.
+        try {
+            ledGpio?.close()
+        } catch (e: IOException) {
+            Log.e(TAG, "Error on PeripheralIO API", e)
+        }
     }
 
     companion object {
         private val TAG = "MainActivity"
         private val BUTTON_PIN_NAME = "BCM21"
+        private val LED_PIN_NAME = "BCM6"
     }
 }
