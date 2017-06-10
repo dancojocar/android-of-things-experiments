@@ -3,10 +3,7 @@ package com.example.miquel.androidofthingsexperiments
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-
-import com.google.android.things.pio.Gpio
-import com.google.android.things.pio.GpioCallback
-import com.google.android.things.pio.PeripheralManagerService
+import com.google.android.things.pio.*
 
 import java.io.IOException
 
@@ -23,9 +20,25 @@ class MainActivity : AppCompatActivity() {
                 value = !value
             }
 
+            readUartBuffer(uart)
+
             // Step 5. Return true to keep callback active.
             return true
         }
+    }
+
+    private val UART_DEVICE = "UART0"
+    lateinit var uart: UartDevice
+
+    fun readUartBuffer(uart: UartDevice) {
+        // Maximum amount of data to read at one time
+        val maxCount = 8
+        val buffer = ByteArray(maxCount)
+        do {
+            if(uart.read(buffer, buffer.size) <= 0) break
+            Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
+        } while (true)
+        Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +46,24 @@ class MainActivity : AppCompatActivity() {
 
         val service = PeripheralManagerService()
         Log.d(TAG, "Available GPIO: ${service.gpioList}")
+
+        try {
+            val deviceList = service.uartDeviceList
+            if (deviceList.isEmpty()) {
+                Log.i(TAG, "No UART port available on this device.")
+            } else {
+                Log.i(TAG, "List of available devices: " + deviceList)
+            }
+            uart = service.openUartDevice(UART_DEVICE)
+            uart.setBaudrate(115200)
+            uart.setDataSize(8)
+            uart.setParity(UartDevice.PARITY_NONE)
+            uart.setStopBits(1)
+            readUartBuffer(uart)
+        } catch (e: IOException) {
+            Log.w(TAG, "Unable to access UART device", e)
+        }
+
 
         try {
             // Step 1. Create GPIO connection.
@@ -72,6 +103,12 @@ class MainActivity : AppCompatActivity() {
             ledGpio?.close()
         } catch (e: IOException) {
             Log.e(TAG, "Error on PeripheralIO API", e)
+        }
+
+        try {
+            uart.close()
+        } catch (e: IOException) {
+            Log.e(TAG, "Error on UART", e)
         }
     }
 
