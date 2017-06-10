@@ -43,9 +43,10 @@ void processSerialCommand() {
 				writeHumidity();
 				break;
 		}
+		Serial.flush();
 	}
 }
 
-void loop() { 
+void loop() {
 	processSerialCommand();
 }

@@ -20,7 +20,9 @@ class MainActivity : AppCompatActivity() {
                 value = !value
             }
 
-            writeUartData(uart, 'T')
+            writeUartData(uart, "T")
+            Thread.sleep(500)
+            readUartBuffer(uart)
 
             // Step 5. Return true to keep callback active.
             return true
@@ -35,14 +37,17 @@ class MainActivity : AppCompatActivity() {
         val maxCount = 8
         val buffer = ByteArray(maxCount)
         do {
-            if(uart.read(buffer, buffer.size) <= 0) break
-            Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
+            val count = uart.read(buffer, buffer.size)
+            Log.d(TAG, "Read $count : ${buffer.toReadableString()} from peripheral")
+            if(count == 0) break
         } while (true)
-        Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
     }
 
-    fun writeUartData(uart: UartDevice, command: Char) {
-        val count = uart.write(byteArrayOf(command.toByte()), 1)
+    fun ByteArray.toReadableString() = filter { it > 0.toByte() }
+            .joinToString(separator = "") { it.toChar().toString() }
+
+    fun writeUartData(uart: UartDevice, command: String) {
+        val count = uart.write(command.toByteArray(), command.length)
         Log.d(TAG, "Wrote $command $count bytes to peripheral")
     }
 
@@ -104,12 +109,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        uart.registerUartDeviceCallback(uartCallback)
+//        uart.registerUartDeviceCallback(uartCallback)
     }
 
     override fun onStop() {
         super.onStop()
-        uart.unregisterUartDeviceCallback(uartCallback)
+//        uart.unregisterUartDeviceCallback(uartCallback)
     }
 
     override fun onDestroy() {
