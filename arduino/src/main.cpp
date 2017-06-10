@@ -14,10 +14,10 @@ void writeTemp() {
 	byte temperature = 0;
 	byte humidity = 0;
 	if (dht11.read(PIN_DHT11, &temperature, &humidity, NULL)) {
-		Serial.println("0");
+		Serial.write("0");
 	} else {
 		sprintf(buff, "%2d", temperature);
-		Serial.println(buff);
+		Serial.write(buff);
 	}
 }
 
@@ -25,10 +25,10 @@ void writeHumidity() {
 	byte temperature = 0;
 	byte humidity = 0;
 	if (dht11.read(PIN_DHT11, &temperature, &humidity, NULL)) {
-		Serial.println("0");
+		Serial.write("0");
 	} else {
 		sprintf(buff, "%2d", humidity);
-		Serial.println(buff);
+		Serial.write(buff);
 	}
 }
 
