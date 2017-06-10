@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
                 value = !value
             }
 
-            readUartBuffer(uart)
+            writeUartData(uart, 'T')
 
             // Step 5. Return true to keep callback active.
             return true
@@ -39,6 +39,11 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
         } while (true)
         Log.d(TAG, "Read ${buffer.joinToString(separator = "") { it.toChar().toString() }} from peripheral")
+    }
+
+    fun writeUartData(uart: UartDevice, command: Char) {
+        val count = uart.write(byteArrayOf(command.toByte()), 1)
+        Log.d(TAG, "Wrote $command $count bytes to peripheral")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
