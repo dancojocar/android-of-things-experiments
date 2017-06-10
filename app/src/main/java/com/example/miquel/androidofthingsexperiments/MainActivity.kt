@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
             uart.setDataSize(8)
             uart.setParity(UartDevice.PARITY_NONE)
             uart.setStopBits(1)
-            readUartBuffer(uart)
         } catch (e: IOException) {
             Log.w(TAG, "Unable to access UART device", e)
         }
@@ -85,6 +84,27 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG, "Error on PeripheralIO API", e)
         }
 
+    }
+
+    val uartCallback = object : UartDeviceCallback() {
+        override fun onUartDeviceError(uart: UartDevice?, error: Int) {
+            Log.e(TAG, "UART device error: $error")
+        }
+
+        override fun onUartDeviceDataAvailable(uart: UartDevice?): Boolean {
+            uart?.let { readUartBuffer(it) }
+            return true
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        uart.registerUartDeviceCallback(uartCallback)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        uart.unregisterUartDeviceCallback(uartCallback)
     }
 
     override fun onDestroy() {
